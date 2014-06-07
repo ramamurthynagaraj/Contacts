@@ -6,7 +6,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
-public class Contacts extends Activity {
+public class ContactsActivity extends Activity {
     private FragmentTransaction fragmentTransaction;
 
     @Override
