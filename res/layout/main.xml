@@ -5,7 +5,7 @@
               android:background="@color/white"
               android:layout_width="fill_parent"
               android:layout_height="fill_parent"
-              android:paddingLeft="@dimen/default_padding"
-              android:paddingRight="@dimen/default_padding">
+              android:paddingLeft="5sp"
+              android:paddingRight="5sp">
 </LinearLayout>
 

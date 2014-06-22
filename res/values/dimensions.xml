@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <dimen name="list_item_height">50sp</dimen>
-    <dimen name="font_size">16sp</dimen>
-    <dimen name="default_padding">5sp</dimen>
-    <dimen name="list_item_padding">12sp</dimen>
-    <dimen name="divider_height">1sp</dimen>
-</resources>
