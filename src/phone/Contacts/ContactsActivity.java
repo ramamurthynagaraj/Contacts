@@ -5,9 +5,14 @@ import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.SearchView;
 
-public class ContactsActivity extends Activity {
+public class ContactsActivity
+        extends Activity
+        implements SearchView.OnQueryTextListener {
     private FragmentTransaction fragmentTransaction;
+    private ContactsListViewFragment contactsList;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -16,10 +21,12 @@ public class ContactsActivity extends Activity {
         startNewContactsListViewFragment();
     }
 
-    private void startNewContactsListViewFragment(){
+    private void startNewContactsListViewFragment() {
         fragmentTransaction = getFragmentManager().beginTransaction();
-        fragmentTransaction.add(R.id.main_layout, new ContactsListViewFragment()).commit();
+        contactsList = new ContactsListViewFragment();
+        fragmentTransaction.add(R.id.main_layout, contactsList).commit();
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_contacts_actionbar, menu);
@@ -27,10 +34,23 @@ public class ContactsActivity extends Activity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.ic_action_search){
+    public boolean onPrepareOptionsMenu(Menu menu){
+        MenuItem searchIcon = menu.findItem(R.id.ic_action_search);
+        SearchView searchView = (SearchView)searchIcon.getActionView();
+        searchView.setOnQueryTextListener(this);
+        return super.onPrepareOptionsMenu(menu);
+    }
 
-        }
-        return super.onOptionsItemSelected(item);
+
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        contactsList.onSearch(query);
+        return true;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        contactsList.onSearch(newText);
+        return true;
     }
 }

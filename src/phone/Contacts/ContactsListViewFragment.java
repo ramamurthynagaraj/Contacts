@@ -24,6 +24,7 @@ public class ContactsListViewFragment
         implements ContactsLoaderCallback,
         AdapterView.OnItemClickListener  {
     private SimpleCursorAdapter cursorAdapter;
+    private ContactsLoader contactsLoader;
     private ListView contactsListView;
 
     public ContactsListViewFragment(){}
@@ -41,9 +42,7 @@ public class ContactsListViewFragment
     }
 
     private void startLoadingContactsInBackground() {
-        ContactsLoader contactsLoader = new ContactsLoader(getActivity(), this);
-        getLoaderManager().initLoader(0, null, contactsLoader);
-
+        contactsLoader = new ContactsLoader(getActivity(), getLoaderManager(),this);
     }
 
     private void initializeEmptyContactsList() {
@@ -93,5 +92,9 @@ public class ContactsListViewFragment
     @Override
     public void onContactsLoaded(Cursor contactsCursor) {
         cursorAdapter.swapCursor(contactsCursor);
+    }
+
+    public void onSearch(String query) {
+        contactsLoader.onSearchContact(query);
     }
 }

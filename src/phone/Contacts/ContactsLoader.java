@@ -16,8 +16,11 @@ import java.util.*;
 public class ContactsLoader implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private Activity parentActivity;
+    private LoaderManager loaderManager;
     private ContactsLoaderCallback listener;
+    private String searchContactsQuery;
 
+    private final static int CONTACTS_LOADER_ID = 0;
     private static final String SIM_DISPLAY_NAME = "name";
     private static final String SIM_PHONE_NUMBER = "number";
     private static final String HAS_PHONE_NUMBER = Contacts.HAS_PHONE_NUMBER;
@@ -42,10 +45,12 @@ public class ContactsLoader implements LoaderManager.LoaderCallbacks<Cursor> {
             CONTACT_TYPE
     };
 
-    public ContactsLoader(Activity parentActivity, ContactsLoaderCallback listener){
+    public ContactsLoader(Activity parentActivity, LoaderManager loaderManager, ContactsLoaderCallback listener){
         this.parentActivity = parentActivity;
+        this.loaderManager = loaderManager;
         this.listener = listener;
-
+        searchContactsQuery = "";
+        loaderManager.initLoader(CONTACTS_LOADER_ID, null, this);
     }
 
     @Override
@@ -64,9 +69,11 @@ public class ContactsLoader implements LoaderManager.LoaderCallbacks<Cursor> {
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        Cursor phoneContacts = getContactsWithPhoneNumber(data);
-        Cursor simContacts = getSimContacts();
-        listener.onContactsLoaded(getSortedAndMergedCursor(phoneContacts, simContacts));
+        List<Contact> phoneContacts = getContactsWithPhoneNumber(data);
+        phoneContacts.addAll(getSimContacts());
+        List<Contact> filteredContacts = filterContacts(phoneContacts);
+        sortContacts(filteredContacts);
+        listener.onContactsLoaded(contactsToCursor(filteredContacts));
     }
 
     @Override
@@ -74,7 +81,7 @@ public class ContactsLoader implements LoaderManager.LoaderCallbacks<Cursor> {
         listener.onContactsLoaded(null);
     }
 
-    private Cursor getContactsWithPhoneNumber(Cursor allContacts){
+    private List<Contact> getContactsWithPhoneNumber(Cursor allContacts){
         MatrixCursor contactsWithPhoneNumber = new MatrixCursor(CONTACT_DETAILS_PROJECTION);
         while (allContacts.moveToNext()){
             if (allContacts.getInt(allContacts.getColumnIndex(HAS_PHONE_NUMBER)) == 1){
@@ -86,10 +93,10 @@ public class ContactsLoader implements LoaderManager.LoaderCallbacks<Cursor> {
                 });
             }
         }
-        return contactsWithPhoneNumber;
+        return cursorToContacts(contactsWithPhoneNumber);
     }
 
-    private Cursor getSimContacts() {
+    private List<Contact> getSimContacts() {
         Uri simUri = Uri.parse(SIM_CONTENT_URI);
         Cursor simContacts = parentActivity.getContentResolver().query(simUri, null, null, null, null);
         MatrixCursor simContactsForApp = new MatrixCursor(CONTACT_DETAILS_PROJECTION);
@@ -103,22 +110,29 @@ public class ContactsLoader implements LoaderManager.LoaderCallbacks<Cursor> {
                     CONTACT_TYPE_SIM
             });
         }
-        return simContactsForApp;
+        return cursorToContacts(simContactsForApp);
     }
 
-    private Cursor getSortedAndMergedCursor(Cursor phoneContacts, Cursor simContacts){
-        MergeCursor mergedCursor = new MergeCursor(new Cursor[]{phoneContacts, simContacts});
-        List<Contact> contacts = cursorToContacts(mergedCursor);
+    private void sortContacts(List<Contact> contacts) {
         Collections.sort(contacts, new Comparator<Contact>() {
             @Override
             public int compare(Contact lhs, Contact rhs) {
                 return lhs.displayName.compareToIgnoreCase(rhs.displayName);
             }
         });
-        return contactsToCursor(contacts);
     }
 
-    private List<Contact> cursorToContacts(MergeCursor mergedCursor) {
+    private List<Contact> filterContacts(List<Contact> phoneContacts) {
+        List<Contact> filteredContacts = new ArrayList<Contact>();
+        for (Contact contact : phoneContacts){
+            if (contact.displayName.toLowerCase().startsWith(searchContactsQuery.toLowerCase())){
+                filteredContacts.add(contact);
+            }
+        }
+        return filteredContacts;
+    }
+
+    private List<Contact> cursorToContacts(Cursor mergedCursor) {
         ArrayList<Contact> contacts = new ArrayList<Contact>();
         while (mergedCursor.moveToNext()){
             contacts.add(new Contact(
@@ -142,6 +156,11 @@ public class ContactsLoader implements LoaderManager.LoaderCallbacks<Cursor> {
             });
         }
         return cursor;
+    }
+
+    public void onSearchContact(String query) {
+        searchContactsQuery  = query;
+        loaderManager.restartLoader(CONTACTS_LOADER_ID, null, this);
     }
 
     private class Contact {
