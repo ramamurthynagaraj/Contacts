@@ -83,6 +83,7 @@ public class ContactsLoader implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private List<Contact> getContactsWithPhoneNumber(Cursor allContacts){
         MatrixCursor contactsWithPhoneNumber = new MatrixCursor(CONTACT_DETAILS_PROJECTION);
+        allContacts.moveToPosition(-1);
         while (allContacts.moveToNext()){
             if (allContacts.getInt(allContacts.getColumnIndex(HAS_PHONE_NUMBER)) == 1){
                 contactsWithPhoneNumber.addRow(new Object []{

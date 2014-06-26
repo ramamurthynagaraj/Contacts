@@ -22,9 +22,10 @@ public class ContactsActivity
     }
 
     private void startNewContactsListViewFragment() {
-        fragmentTransaction = getFragmentManager().beginTransaction();
         contactsList = new ContactsListViewFragment();
-        fragmentTransaction.add(R.id.main_layout, contactsList).commit();
+        fragmentTransaction = getFragmentManager().beginTransaction();
+        fragmentTransaction.add(R.id.main_layout, contactsList)
+                .commit();
     }
 
     @Override

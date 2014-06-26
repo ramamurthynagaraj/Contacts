@@ -7,5 +7,12 @@
               android:layout_height="fill_parent"
               android:paddingLeft="5sp"
               android:paddingRight="5sp">
+    <TextView android:id="@android:id/empty"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:textColor="@color/black"
+        android:text="" />
+
 </LinearLayout>
 

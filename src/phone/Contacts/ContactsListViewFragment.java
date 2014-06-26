@@ -1,6 +1,8 @@
 package phone.Contacts;
 
+import android.app.ActionBar;
 import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.app.LoaderManager;
 import android.content.CursorLoader;
 import android.content.Loader;
@@ -18,6 +20,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
+import android.widget.TextView;
 
 public class ContactsListViewFragment
         extends Fragment
@@ -47,6 +50,7 @@ public class ContactsListViewFragment
 
     private void initializeEmptyContactsList() {
         contactsListView = (ListView) getActivity().findViewById(android.R.id.list);
+        contactsListView.setEmptyView(getDefaultTextView());
         cursorAdapter = new SimpleCursorAdapter(
                 getActivity(),
                 R.layout.list_item_view,
@@ -58,18 +62,29 @@ public class ContactsListViewFragment
         contactsListView.setOnItemClickListener(this);
     }
 
+    private TextView getDefaultTextView(){
+        TextView textView = (TextView)getActivity().findViewById(android.R.id.empty);
+        textView.setText("No Contacts found");
+        return textView;
+    }
+
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         SimpleCursorAdapter adapter = (SimpleCursorAdapter) parent.getAdapter();
         Cursor cursor = adapter.getCursor();
         cursor.moveToPosition(position);
-        String contact_type = cursor.getString(ContactsLoader.CONTACT_TYPE_INDEX);
-        if (contact_type == ContactsLoader.CONTACT_TYPE_MOBILE) {
-            long contactId = cursor.getLong(ContactsLoader.ID_INDEX);
-            String contactLookUpKey = cursor.getString(ContactsLoader.LOOKUP_KEY_INDEX);
-            Uri contactLookupUri = Contacts.getLookupUri(contactId, contactLookUpKey);
-            QuickContact.showQuickContact(getActivity(), getActivity().findViewById(android.R.id.list), contactLookupUri, QuickContact.MODE_LARGE, null);
-        }
+        String contactType = cursor.getString(ContactsLoader.CONTACT_TYPE_INDEX);
+        String displayName = cursor.getString(ContactsLoader.DISPLAY_NAME_INDEX);
+        long contactId = cursor.getLong(ContactsLoader.ID_INDEX);
+        loadContactDetailsViewFragment(contactType, displayName, contactId);
+    }
+
+    private void loadContactDetailsViewFragment(String contactType, String displayName, long contactId){
+        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+        transaction.replace(R.id.main_layout, new ContactDetailsViewFragment(contactType, displayName, contactId))
+                    .addToBackStack(displayName)
+                    .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                    .commit();
     }
 
     public void getAllRawContactsFor(long contactId){
@@ -94,7 +109,8 @@ public class ContactsListViewFragment
         cursorAdapter.swapCursor(contactsCursor);
     }
 
-    public void onSearch(String query) {
+    public boolean onSearch(String query) {
         contactsLoader.onSearchContact(query);
+        return true;
     }
 }

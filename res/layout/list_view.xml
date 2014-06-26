@@ -10,5 +10,5 @@
           android:fastScrollEnabled="true"
           android:fastScrollAlwaysVisible="true"
           android:clickable="true">
-
 </ListView>
+
