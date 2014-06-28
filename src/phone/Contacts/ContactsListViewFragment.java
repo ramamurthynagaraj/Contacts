@@ -14,18 +14,14 @@ import android.os.Bundle;
 import android.provider.ContactsContract.RawContacts;
 import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.QuickContact;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ListView;
-import android.widget.SimpleCursorAdapter;
-import android.widget.TextView;
+import android.view.*;
+import android.widget.*;
 
 public class ContactsListViewFragment
         extends Fragment
         implements ContactsLoaderCallback,
-        AdapterView.OnItemClickListener  {
+        AdapterView.OnItemClickListener,
+        SearchView.OnQueryTextListener {
     private SimpleCursorAdapter cursorAdapter;
     private ContactsLoader contactsLoader;
     private ListView contactsListView;
@@ -34,6 +30,7 @@ public class ContactsListViewFragment
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        setHasOptionsMenu(true);
         return inflater.inflate(R.layout.list_view, container, false);
     }
 
@@ -42,6 +39,49 @@ public class ContactsListViewFragment
         super.onActivityCreated(savedInstanceState);
         initializeEmptyContactsList();
         startLoadingContactsInBackground();
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater menuInflater) {
+        menuInflater.inflate(R.menu.menu_contacts_actionbar, menu);
+        super.onCreateOptionsMenu(menu, menuInflater);
+    }
+
+    @Override
+    public void onPrepareOptionsMenu(Menu menu){
+        MenuItem searchIcon = menu.findItem(R.id.ic_action_search);
+        SearchView searchView = (SearchView)searchIcon.getActionView();
+        searchView.setOnQueryTextListener(this);
+        super.onPrepareOptionsMenu(menu);
+    }
+
+
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        contactsLoader.onSearchContact(query);
+        return true;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        contactsLoader.onSearchContact(newText);
+        return true;
+    }
+
+    @Override
+    public void onContactsLoaded(Cursor contactsCursor) {
+        cursorAdapter.swapCursor(contactsCursor);
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        SimpleCursorAdapter adapter = (SimpleCursorAdapter) parent.getAdapter();
+        Cursor cursor = adapter.getCursor();
+        cursor.moveToPosition(position);
+        String contactType = cursor.getString(ContactsLoader.CONTACT_TYPE_INDEX);
+        String displayName = cursor.getString(ContactsLoader.DISPLAY_NAME_INDEX);
+        long contactId = cursor.getLong(ContactsLoader.ID_INDEX);
+        loadContactDetailsViewFragment(contactType, displayName, contactId);
     }
 
     private void startLoadingContactsInBackground() {
@@ -68,17 +108,6 @@ public class ContactsListViewFragment
         return textView;
     }
 
-    @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        SimpleCursorAdapter adapter = (SimpleCursorAdapter) parent.getAdapter();
-        Cursor cursor = adapter.getCursor();
-        cursor.moveToPosition(position);
-        String contactType = cursor.getString(ContactsLoader.CONTACT_TYPE_INDEX);
-        String displayName = cursor.getString(ContactsLoader.DISPLAY_NAME_INDEX);
-        long contactId = cursor.getLong(ContactsLoader.ID_INDEX);
-        loadContactDetailsViewFragment(contactType, displayName, contactId);
-    }
-
     private void loadContactDetailsViewFragment(String contactType, String displayName, long contactId){
         FragmentTransaction transaction = getFragmentManager().beginTransaction();
         transaction.replace(R.id.main_layout, new ContactDetailsViewFragment(contactType, displayName, contactId))
@@ -102,15 +131,5 @@ public class ContactsListViewFragment
             accountType +=  "," + rawContacts.getString(1);
             accountName +=  "," + rawContacts.getString(2);
         }
-    }
-
-    @Override
-    public void onContactsLoaded(Cursor contactsCursor) {
-        cursorAdapter.swapCursor(contactsCursor);
-    }
-
-    public boolean onSearch(String query) {
-        contactsLoader.onSearchContact(query);
-        return true;
     }
 }
