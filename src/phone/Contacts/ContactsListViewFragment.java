@@ -25,8 +25,10 @@ public class ContactsListViewFragment
     private SimpleCursorAdapter cursorAdapter;
     private ContactsLoader contactsLoader;
     private ListView contactsListView;
+    private String NO_CONTACTS_FOUND = "No Contacts found";
 
-    public ContactsListViewFragment(){}
+    public ContactsListViewFragment(){
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -85,7 +87,8 @@ public class ContactsListViewFragment
     }
 
     private void startLoadingContactsInBackground() {
-        contactsLoader = new ContactsLoader(getActivity(), getLoaderManager(),this);
+        contactsLoader = new ContactsLoader(getActivity());
+        contactsLoader.loadAllInBackground(getLoaderManager(), this);
     }
 
     private void initializeEmptyContactsList() {
@@ -104,7 +107,7 @@ public class ContactsListViewFragment
 
     private TextView getDefaultTextView(){
         TextView textView = (TextView)getActivity().findViewById(android.R.id.empty);
-        textView.setText("No Contacts found");
+        textView.setText(NO_CONTACTS_FOUND);
         return textView;
     }
 
@@ -114,22 +117,5 @@ public class ContactsListViewFragment
                     .addToBackStack(displayName)
                     .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
                     .commit();
-    }
-
-    public void getAllRawContactsFor(long contactId){
-        String whereCondition = RawContacts.CONTACT_ID + "=?";
-        Cursor rawContacts = getActivity().getContentResolver()
-                .query(RawContacts.CONTENT_URI,
-                        new String[]{ RawContacts._ID, RawContacts.ACCOUNT_TYPE, RawContacts.ACCOUNT_NAME},
-                        whereCondition,
-                        new String[]{ String.valueOf(contactId) },
-                        null);
-        rawContacts.moveToFirst();
-        String accountType = rawContacts.getString(1);
-        String accountName = rawContacts.getString(2);
-        while(rawContacts.moveToNext()){
-            accountType +=  "," + rawContacts.getString(1);
-            accountName +=  "," + rawContacts.getString(2);
-        }
     }
 }

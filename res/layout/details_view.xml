@@ -4,10 +4,40 @@
               android:orientation="vertical"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
-              android:textColor="@color/black"
-              android:textSize="16sp">
-    <TextView
-        android:id="@+id/details_phone_number"
+              android:textColor="@color/black">
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:background="@android:color/holo_green_dark">
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="80dp"
+            android:id="@+id/photo_details"
+            android:src="@drawable/ic_action_user"
+            android:background="@color/black"
+            android:contentDescription="photo"
+            android:layout_weight="1"
+            android:scaleType="fitXY"
+            android:visibility="visible"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="80dp"
+            android:id="@+id/contact_name_details"
+            android:layout_weight="3"
+            android:text="contact_name"
+            android:textColor="@color/black"
+            android:textSize="16sp"
+            android:gravity="center"/>
+    </LinearLayout>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:id="@+id/phone_number_details"
+        android:gravity="center_vertical"
+        android:paddingLeft="15dp"
+        android:text="phone_number"
+        android:textColor="@color/black"
+        android:textSize="16sp"/>
 </LinearLayout>

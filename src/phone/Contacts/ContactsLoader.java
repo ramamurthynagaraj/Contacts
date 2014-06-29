@@ -2,6 +2,7 @@ package phone.Contacts;
 
 import android.app.Activity;
 import android.app.LoaderManager;
+import android.content.ContentUris;
 import android.content.CursorLoader;
 import android.content.Loader;
 import android.database.Cursor;
@@ -9,8 +10,10 @@ import android.database.MatrixCursor;
 import android.database.MergeCursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.provider.ContactsContract.Contacts;
 
+import java.io.InputStream;
 import java.util.*;
 
 public class ContactsLoader implements LoaderManager.LoaderCallbacks<Cursor> {
@@ -18,7 +21,7 @@ public class ContactsLoader implements LoaderManager.LoaderCallbacks<Cursor> {
     private Activity parentActivity;
     private LoaderManager loaderManager;
     private ContactsLoaderCallback listener;
-    private String searchContactsQuery;
+    private String searchContactsQuery = "";
 
     private final static int CONTACTS_LOADER_ID = 0;
     private static final String SIM_DISPLAY_NAME = "name";
@@ -45,11 +48,13 @@ public class ContactsLoader implements LoaderManager.LoaderCallbacks<Cursor> {
             CONTACT_TYPE
     };
 
-    public ContactsLoader(Activity parentActivity, LoaderManager loaderManager, ContactsLoaderCallback listener){
+    public ContactsLoader(Activity parentActivity){
         this.parentActivity = parentActivity;
+    }
+
+    public void loadAllInBackground(LoaderManager loaderManager, ContactsLoaderCallback listener){
         this.loaderManager = loaderManager;
         this.listener = listener;
-        searchContactsQuery = "";
         loaderManager.initLoader(CONTACTS_LOADER_ID, null, this);
     }
 
@@ -159,6 +164,40 @@ public class ContactsLoader implements LoaderManager.LoaderCallbacks<Cursor> {
         return cursor;
     }
 
+    public String getMobilePhoneNumber(long contactId){
+        String whereCondition = ContactsContract.CommonDataKinds.Phone.CONTACT_ID + "=?";
+        Cursor phoneDataCursor = parentActivity.getContentResolver().query(
+                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                null,
+                whereCondition,
+                new String[]{ String.valueOf(contactId)},
+                null
+        );
+        phoneDataCursor.moveToFirst();
+        return phoneDataCursor.getString(phoneDataCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+    }
+
+    public String getSimPhoneNumber(String contactName){
+        String whereCondition =  SIM_DISPLAY_NAME +"=?";
+        Cursor simContactCursor = parentActivity.getContentResolver().query(
+                Uri.parse(SIM_CONTENT_URI),
+                null,
+                whereCondition,
+                new String[]{ contactName },
+                null
+        );
+        simContactCursor.moveToFirst();
+        return simContactCursor.getString(simContactCursor.getColumnIndex(SIM_PHONE_NUMBER));
+    }
+
+    public Uri getContactPhotoUri(long contactId){
+        Uri contactUri = ContentUris.withAppendedId(Contacts.CONTENT_URI, contactId);
+        InputStream photoInputStream = Contacts.openContactPhotoInputStream(parentActivity.getContentResolver(), contactUri);
+        if (photoInputStream == null){
+            return null;
+        }
+        return Uri.withAppendedPath(contactUri, Contacts.Photo.CONTENT_DIRECTORY);
+    }
     public void onSearchContact(String query) {
         searchContactsQuery  = query;
         loaderManager.restartLoader(CONTACTS_LOADER_ID, null, this);
