@@ -78,6 +78,7 @@ public class ContactsListViewFragment
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         SimpleCursorAdapter adapter = (SimpleCursorAdapter) parent.getAdapter();
+        view.setBackgroundColor(getResources().getColor(R.color.dark_gray));
         Cursor cursor = adapter.getCursor();
         cursor.moveToPosition(position);
         String contactType = cursor.getString(ContactsLoader.CONTACT_TYPE_INDEX);

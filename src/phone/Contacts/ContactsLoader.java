@@ -7,11 +7,10 @@ import android.content.CursorLoader;
 import android.content.Loader;
 import android.database.Cursor;
 import android.database.MatrixCursor;
-import android.database.MergeCursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.provider.ContactsContract.Contacts;
+import android.provider.ContactsContract.CommonDataKinds.Phone;
 
 import java.io.InputStream;
 import java.util.*;
@@ -164,30 +163,40 @@ public class ContactsLoader implements LoaderManager.LoaderCallbacks<Cursor> {
         return cursor;
     }
 
-    public String getMobilePhoneNumber(long contactId){
-        String whereCondition = ContactsContract.CommonDataKinds.Phone.CONTACT_ID + "=?";
+    public List<String> getMobilePhoneNumber(long contactId){
+        String whereCondition = Phone.CONTACT_ID + "=?";
         Cursor phoneDataCursor = parentActivity.getContentResolver().query(
-                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                Phone.CONTENT_URI,
                 null,
                 whereCondition,
                 new String[]{ String.valueOf(contactId)},
                 null
         );
-        phoneDataCursor.moveToFirst();
-        return phoneDataCursor.getString(phoneDataCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+        List<String> phoneNumbers = new ArrayList<String>();
+        while(phoneDataCursor.moveToNext()){
+            String phoneNumber = phoneDataCursor.getString(phoneDataCursor.getColumnIndex(Phone.NUMBER));
+            phoneNumbers.add(phoneNumber);
+        }
+        return phoneNumbers;
     }
 
-    public String getSimPhoneNumber(String contactName){
-        String whereCondition =  SIM_DISPLAY_NAME +"=?";
+    public List<String> getSimPhoneNumber(String contactName){
         Cursor simContactCursor = parentActivity.getContentResolver().query(
                 Uri.parse(SIM_CONTENT_URI),
                 null,
-                whereCondition,
-                new String[]{ contactName },
+                null,
+                null,
                 null
         );
-        simContactCursor.moveToFirst();
-        return simContactCursor.getString(simContactCursor.getColumnIndex(SIM_PHONE_NUMBER));
+        List<String> phoneNumbers = new ArrayList<String>();
+        while(simContactCursor.moveToNext()){
+            String name = simContactCursor.getString(simContactCursor.getColumnIndex(SIM_DISPLAY_NAME));
+            String phoneNumber = simContactCursor.getString(simContactCursor.getColumnIndex(SIM_PHONE_NUMBER));
+            if (name.equals(contactName)) {
+                phoneNumbers.add(phoneNumber);
+            }
+        }
+        return phoneNumbers;
     }
 
     public Uri getContactPhotoUri(long contactId){

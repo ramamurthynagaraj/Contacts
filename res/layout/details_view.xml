@@ -4,6 +4,7 @@
               android:orientation="vertical"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
+              android:id="@+id/details_view"
               android:textColor="@color/black">
 
     <LinearLayout
@@ -31,13 +32,8 @@
             android:textSize="16sp"
             android:gravity="center"/>
     </LinearLayout>
-    <TextView
+    <View
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:id="@+id/phone_number_details"
-        android:gravity="center_vertical"
-        android:paddingLeft="15dp"
-        android:text="phone_number"
-        android:textColor="@color/black"
-        android:textSize="16sp"/>
+        android:layout_height="2dp"
+        android:background="@color/dark_gray" />
 </LinearLayout>

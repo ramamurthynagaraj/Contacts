@@ -5,7 +5,6 @@
           android:layout_width="match_parent"
           android:layout_height="50dp"
           android:text="@string/search_contacts"
-          android:background="@color/white"
           android:textColor="@color/black"
           android:paddingLeft="15dp"
           android:clickable="false">
@@ -17,7 +16,6 @@
               android:gravity="center_vertical"
               android:text=""
               android:textSize="16sp"
-              android:background="@color/white"
               android:textColor="@color/black"
               android:clickable="false">
     </TextView>
@@ -28,7 +26,6 @@
               android:layout_weight="1"
               android:gravity="center_vertical"
               android:text=""
-              android:background="@color/white"
               android:textColor="@color/black"
               android:clickable="false">
     </TextView>
