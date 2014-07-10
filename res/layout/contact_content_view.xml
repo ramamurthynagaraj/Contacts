@@ -4,15 +4,31 @@
               android:orientation="vertical"
               android:layout_width="match_parent"
               android:layout_height="match_parent">
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:id="@+id/phone_number_details"
-        android:gravity="center_vertical"
-        android:paddingLeft="15dp"
-        android:text="phone_number"
-        android:textColor="@color/black"
-        android:textSize="16sp"/>
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_weight="6"
+            android:id="@+id/phone_number_details"
+            android:gravity="center_vertical"
+            android:paddingLeft="15dp"
+            android:text="phone_number"
+            android:textColor="@color/black"
+            android:textSize="16sp"/>
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="50dp"
+            android:id="@+id/ic_action_call"/>
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="50dp"
+            android:id="@+id/ic_action_mail"/>
+    </LinearLayout>
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
