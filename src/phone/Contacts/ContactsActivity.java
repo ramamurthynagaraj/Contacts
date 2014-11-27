@@ -9,8 +9,6 @@ import android.view.View;
 import android.widget.SearchView;
 
 public class ContactsActivity extends Activity {
-    private FragmentTransaction fragmentTransaction;
-    private ContactsListViewFragment contactsList;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -20,9 +18,9 @@ public class ContactsActivity extends Activity {
     }
 
     private void startNewContactsListViewFragment() {
-        contactsList = new ContactsListViewFragment();
-        fragmentTransaction = getFragmentManager().beginTransaction();
-        fragmentTransaction.add(R.id.main_layout, contactsList)
+        getFragmentManager()
+                .beginTransaction()
+                .add(R.id.main_layout, new ContactsListViewFragment())
                 .commit();
     }
 }

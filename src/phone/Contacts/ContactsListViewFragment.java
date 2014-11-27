@@ -1,19 +1,9 @@
 package phone.Contacts;
 
-import android.app.ActionBar;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
-import android.app.LoaderManager;
-import android.content.CursorLoader;
-import android.content.Loader;
 import android.database.Cursor;
-import android.database.MatrixCursor;
-import android.database.MergeCursor;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.ContactsContract.RawContacts;
-import android.provider.ContactsContract.Contacts;
-import android.provider.ContactsContract.QuickContact;
 import android.view.*;
 import android.widget.*;
 
@@ -59,14 +49,14 @@ public class ContactsListViewFragment
 
 
     @Override
-    public boolean onQueryTextSubmit(String query) {
-        contactsLoader.onSearchContact(query);
+    public boolean onQueryTextSubmit(String newText) {
+        contactsLoader.onSearchContact(newText,this);
         return true;
     }
 
     @Override
     public boolean onQueryTextChange(String newText) {
-        contactsLoader.onSearchContact(newText);
+        contactsLoader.onSearchContact(newText, this);
         return true;
     }
 
@@ -89,7 +79,7 @@ public class ContactsListViewFragment
 
     private void startLoadingContactsInBackground() {
         contactsLoader = new ContactsLoader(getActivity());
-        contactsLoader.loadAllInBackground(getLoaderManager(), this);
+        contactsLoader.loadAllContacts(this);
     }
 
     private void initializeEmptyContactsList() {
