@@ -1,9 +1,10 @@
 package phone.Contacts;
 
 import android.app.Fragment;
-import android.app.FragmentTransaction;
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.*;
 import android.widget.*;
 
@@ -71,10 +72,17 @@ public class ContactsListViewFragment
         view.setBackgroundColor(getResources().getColor(R.color.dark_gray));
         Cursor cursor = adapter.getCursor();
         cursor.moveToPosition(position);
-        String contactType = cursor.getString(ContactsLoader.CONTACT_TYPE_INDEX);
-        String displayName = cursor.getString(ContactsLoader.DISPLAY_NAME_INDEX);
-        long contactId = cursor.getLong(ContactsLoader.ID_INDEX);
-        loadContactDetailsViewFragment(contactType, displayName, contactId);
+        final String contactType = cursor.getString(ContactsLoader.CONTACT_TYPE_INDEX);
+        final String displayName = cursor.getString(ContactsLoader.DISPLAY_NAME_INDEX);
+        final long contactId = cursor.getLong(ContactsLoader.ID_INDEX);
+        final View listItemView = view;
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                loadContactDetailsViewFragment(contactType, displayName, contactId);
+                listItemView.setBackgroundColor(getResources().getColor(R.color.white));
+            }
+        }, 300);
     }
 
     private void startLoadingContactsInBackground() {
@@ -103,10 +111,10 @@ public class ContactsListViewFragment
     }
 
     private void loadContactDetailsViewFragment(String contactType, String displayName, long contactId){
-        FragmentTransaction transaction = getFragmentManager().beginTransaction();
-        transaction.replace(R.id.main_layout, new ContactDetailsViewFragment(contactType, displayName, contactId))
-                    .addToBackStack(displayName)
-                    .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-                    .commit();
+        Intent intent = new Intent(getActivity(), ContactDetailsViewActivity.class);
+        intent.putExtra("contactType", contactType);
+        intent.putExtra("displayName", displayName);
+        intent.putExtra("contactId", contactId);
+        startActivity(intent);
     }
 }

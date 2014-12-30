@@ -1,5 +1,6 @@
 package phone.Contacts;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
 import android.graphics.Color;
@@ -7,44 +8,40 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import android.view.*;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.List;
 
-public class ContactDetailsViewFragment extends Fragment {
+public class ContactDetailsViewActivity extends Activity {
     private ContactsLoader contactsLoader;
     private String contactType;
     private String displayName;
     private long contactId;
 
-    public ContactDetailsViewFragment(String contactType, String displayName, long contactId) {
-        this.contactType = contactType;
-        this.displayName = displayName;
-        this.contactId = contactId;
-    }
+    public ContactDetailsViewActivity() {}
+
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.details_view, container, false);
-    }
+    public void onCreate(Bundle savedInstanceState) {
+        setContentView(R.layout.details_view);
+        Intent intent = getIntent();
+        this.contactId = intent.getLongExtra("contactId", 0);
+        this.displayName = intent.getStringExtra("displayName");
+        this.contactType = intent.getStringExtra("contactType");
 
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        this.contactsLoader = new ContactsLoader(getActivity());
+        this.contactsLoader = new ContactsLoader(this);
         showThumbnailPhoto(contactsLoader.getContactPhotoUri(contactId));
         showContactName(displayName);
-        if (contactType == ContactsLoader.CONTACT_TYPE_MOBILE){
+        if (ContactsLoader.CONTACT_TYPE_MOBILE.equalsIgnoreCase(contactType)){
             showPhoneNumbers(contactsLoader.getMobilePhoneNumber(contactId));
         }
         else {
             showPhoneNumbers(contactsLoader.getSimPhoneNumber(displayName));
         }
+        super.onCreate(savedInstanceState);
     }
 
     private void showPhoneNumbers(List<String> phoneNumbers){
@@ -54,7 +51,7 @@ public class ContactDetailsViewFragment extends Fragment {
     }
 
     private void showPhoneNumber(final String phoneNumber) {
-        LayoutInflater inflater = LayoutInflater.from(getActivity());
+        LayoutInflater inflater = LayoutInflater.from(this);
         View contactContentView = inflater.inflate(R.layout.contact_content_view, null);
         TextView phoneNumberTextView = (TextView)contactContentView.findViewById(R.id.phone_number_details);
         phoneNumberTextView.setText(phoneNumber);
@@ -70,7 +67,7 @@ public class ContactDetailsViewFragment extends Fragment {
                 message(phoneNumber);
             }
         });
-        LinearLayout detailsLayout = (LinearLayout)getActivity().findViewById(R.id.details_view);
+        LinearLayout detailsLayout = (LinearLayout)this.findViewById(R.id.details_view);
         detailsLayout.addView(contactContentView);
     }
 
@@ -95,17 +92,21 @@ public class ContactDetailsViewFragment extends Fragment {
     }
 
     private void showContactName(String contactName) {
-        TextView nameTextView = (TextView)getActivity().findViewById(R.id.contact_name_details);
+        TextView nameTextView = (TextView)this.findViewById(R.id.contact_name_details);
         nameTextView.setText(contactName);
     }
 
     private void showThumbnailPhoto(Uri contactPhotoUri) {
-        ImageView photoView = (ImageView) getActivity().findViewById(R.id.photo_details);
+        ImageView photoView = (ImageView) this.findViewById(R.id.photo_details);
         if (contactPhotoUri != null) {
             photoView.setImageURI(contactPhotoUri);
         }
         else {
             photoView.setImageResource(R.drawable.ic_action_user);
         }
+    }
+
+    public void onDeleteAction(MenuItem item) {
+
     }
 }
