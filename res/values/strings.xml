@@ -3,4 +3,7 @@
     <string name="app_name">Contacts</string>
     <string name="search_contacts">Search Contacts</string>
     <string name="delete_contact">Delete Contact</string>
+    <string name="delete_contact_question">Delete Contact?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
 </resources>

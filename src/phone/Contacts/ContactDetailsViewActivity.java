@@ -2,6 +2,7 @@ package phone.Contacts;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -42,6 +43,14 @@ public class ContactDetailsViewActivity extends Activity {
             showPhoneNumbers(contactsLoader.getSimPhoneNumber(displayName));
         }
         super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.contact_details_actionbar, menu);
+        return super.onCreateOptionsMenu(menu);
     }
 
     private void showPhoneNumbers(List<String> phoneNumbers){
@@ -107,6 +116,21 @@ public class ContactDetailsViewActivity extends Activity {
     }
 
     public void onDeleteAction(MenuItem item) {
+        showConfirmDialog();
+    }
 
+    private void showConfirmDialog() {
+        ConfirmDialogFragment confirmDialogFragment = new ConfirmDialogFragment(R.string.delete_contact_question, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+            }
+        }, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+            }
+        });
+        confirmDialogFragment.show(getFragmentManager(), "Confirm Delete Contact");
     }
 }
