@@ -189,16 +189,4 @@ public class ContactsLoader {
         listener.onContactsLoaded(contactsToCursor(filteredContacts));
     }
 
-    private class Contact {
-        public long id;
-        public String lookupKey;
-        public String displayName;
-        public String contactType;
-        public Contact(long id, String lookupKey, String displayName, String contactType){
-            this.id = id;
-            this.lookupKey = lookupKey;
-            this.displayName = displayName;
-            this.contactType = contactType;
-        }
-    }
 }
