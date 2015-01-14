@@ -1,9 +1,12 @@
 package phone.Contacts;
 
 import android.app.Activity;
+import android.content.ContentUris;
 import android.database.Cursor;
+import android.net.Uri;
 import android.provider.ContactsContract;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,13 +61,14 @@ public class PhoneContactsRepositoryImpl implements IContactsRepository<Long> {
         String name =phoneContacts.getString(phoneContacts.getColumnIndex(DISPLAY_NAME));
         long id = phoneContacts.getLong(phoneContacts.getColumnIndex(_ID));
         String lookupKey = phoneContacts.getString(phoneContacts.getColumnIndex(LOOKUP_KEY));
-        return new Contact(
-                id,
-                lookupKey,
-                name,
-                CONTACT_TYPE_MOBILE,
-                getAllContactNumbers(id)
-        );
+        Contact contact = new Contact();
+        contact.id = id;
+        contact.lookupKey = lookupKey;
+        contact.displayName = name;
+        contact.phoneNumber = getAllContactNumbers(id);
+        contact.contactType = CONTACT_TYPE_MOBILE;
+        contact.photoUri = getContactPhotoUri(id);
+        return contact;
     }
 
     private List<String> getAllContactNumbers(long contactId){
@@ -82,5 +86,14 @@ public class PhoneContactsRepositoryImpl implements IContactsRepository<Long> {
             phoneNumbers.add(phoneNumber);
         }
         return phoneNumbers;
+    }
+
+    public Uri getContactPhotoUri(long contactId){
+        Uri contactUri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, contactId);
+        InputStream photoInputStream = ContactsContract.Contacts.openContactPhotoInputStream(parentActivity.getContentResolver(), contactUri);
+        if (photoInputStream == null){
+            return null;
+        }
+        return Uri.withAppendedPath(contactUri, ContactsContract.Contacts.Photo.CONTENT_DIRECTORY);
     }
 }

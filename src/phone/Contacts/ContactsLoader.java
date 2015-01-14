@@ -16,24 +16,17 @@ import java.util.List;
 
 public class ContactsLoader {
 
-    private Activity parentActivity;
-
-    private static final String SIM_DISPLAY_NAME = "name";
-    private static final String SIM_PHONE_NUMBER = "number";
-    private static final String SIM_CONTENT_URI = "content://icc/adn";
-    private static final long SIM_CONTACT_IDENTIFIER = 9999;
-
     public static final String _ID = Contacts._ID;
     public static final String LOOKUP_KEY = Contacts.LOOKUP_KEY;
     public static final String DISPLAY_NAME = Contacts.DISPLAY_NAME_PRIMARY;
-    private static final String HAS_PHONE_NUMBER = Contacts.HAS_PHONE_NUMBER;
     public static final String CONTACT_TYPE = "CONTACT_TYPE";
-    public static final String CONTACT_TYPE_MOBILE = "Mobile";
-    public static final String CONTACT_TYPE_SIM = "Sim";
+
     public static final int ID_INDEX = 0;
-    public static final int LOOKUP_KEY_INDEX = 1;
     public static final int DISPLAY_NAME_INDEX = 2;
     public static final int CONTACT_TYPE_INDEX = 3;
+
+    public static final String CONTACT_TYPE_MOBILE = "Mobile";
+    public static final String CONTACT_TYPE_SIM = "Sim";
 
     private static final String[] CONTACT_DETAILS_PROJECTION = new String[]{
             _ID,
@@ -42,8 +35,12 @@ public class ContactsLoader {
             CONTACT_TYPE
     };
 
+    private SimContactsRepositoryImpl simContactsRepository;
+    private PhoneContactsRepositoryImpl phoneContactsRepository;
+
     public ContactsLoader(Activity parentActivity){
-        this.parentActivity = parentActivity;
+        simContactsRepository = new SimContactsRepositoryImpl(parentActivity);
+        phoneContactsRepository = new PhoneContactsRepositoryImpl(parentActivity);
     }
 
     public void loadAllContacts(ContactsLoaderCallback listener){
@@ -52,46 +49,10 @@ public class ContactsLoader {
 
     private List<Contact> getAllSortedContacts() {
         List<Contact> contacts = new ArrayList<Contact>();
-        contacts.addAll(getPhoneContacts());
-        contacts.addAll(getSimContacts());
+        contacts.addAll(phoneContactsRepository.getAll());
+        contacts.addAll(simContactsRepository.getAll());
         sortContacts(contacts);
         return contacts;
-    }
-
-    private List<Contact> getPhoneContacts() {
-        Cursor phoneContacts = parentActivity.getContentResolver().query(Contacts.CONTENT_URI, null, null, null, null);
-        MatrixCursor phoneContactsForApp = new MatrixCursor(CONTACT_DETAILS_PROJECTION);
-        while (phoneContacts.moveToNext()){
-            String name =phoneContacts.getString(phoneContacts.getColumnIndex(DISPLAY_NAME));
-            String id = phoneContacts.getString(phoneContacts.getColumnIndex(_ID));
-            String lookupKey = phoneContacts.getString(phoneContacts.getColumnIndex(LOOKUP_KEY));
-            int hasPhoneNumber = phoneContacts.getInt(phoneContacts.getColumnIndex(HAS_PHONE_NUMBER));
-            if (hasPhoneNumber == 1) {
-                phoneContactsForApp.addRow(new Object[]{
-                        id,
-                        lookupKey,
-                        name,
-                        CONTACT_TYPE_MOBILE
-                });
-            }
-        }
-        return cursorToContacts(phoneContactsForApp);
-    }
-
-    private List<Contact> getSimContacts() {
-        Uri simUri = Uri.parse(SIM_CONTENT_URI);
-        Cursor simContacts = parentActivity.getContentResolver().query(simUri, null, null, null, null);
-        MatrixCursor simContactsForApp = new MatrixCursor(CONTACT_DETAILS_PROJECTION);
-        while (simContacts.moveToNext()){
-            String name =simContacts.getString(simContacts.getColumnIndex(SIM_DISPLAY_NAME));
-            simContactsForApp.addRow(new Object[]{
-                    SIM_CONTACT_IDENTIFIER,
-                    name,
-                    name,
-                    CONTACT_TYPE_SIM
-            });
-        }
-        return cursorToContacts(simContactsForApp);
     }
 
     private void sortContacts(List<Contact> contacts) {
@@ -113,19 +74,6 @@ public class ContactsLoader {
         return filteredContacts;
     }
 
-    private List<Contact> cursorToContacts(Cursor mergedCursor) {
-        ArrayList<Contact> contacts = new ArrayList<Contact>();
-        while (mergedCursor.moveToNext()){
-            contacts.add(new Contact(
-                    mergedCursor.getLong(ID_INDEX),
-                    mergedCursor.getString(LOOKUP_KEY_INDEX),
-                    mergedCursor.getString(DISPLAY_NAME_INDEX),
-                    mergedCursor.getString(CONTACT_TYPE_INDEX)
-            ));
-        }
-        return contacts;
-    }
-
     private Cursor contactsToCursor(List<Contact> contacts) {
         MatrixCursor cursor = new MatrixCursor(CONTACT_DETAILS_PROJECTION);
         for (Contact contact : contacts){
@@ -139,50 +87,15 @@ public class ContactsLoader {
         return cursor;
     }
 
-    public List<String> getMobilePhoneNumber(long contactId){
-        String whereCondition = Phone.CONTACT_ID + "=?";
-        Cursor phoneDataCursor = parentActivity.getContentResolver().query(
-                Phone.CONTENT_URI,
-                null,
-                whereCondition,
-                new String[]{ String.valueOf(contactId)},
-                null
-        );
-        List<String> phoneNumbers = new ArrayList<String>();
-        while(phoneDataCursor.moveToNext()){
-            String phoneNumber = phoneDataCursor.getString(phoneDataCursor.getColumnIndex(Phone.NUMBER));
-            phoneNumbers.add(phoneNumber);
+    public Contact getContactFor(long contactId, String contactName, String contactType){
+        if (ContactsLoader.CONTACT_TYPE_MOBILE.equalsIgnoreCase(contactType)){
+            return phoneContactsRepository.getById(contactId);
         }
-        return phoneNumbers;
+        else {
+            return simContactsRepository.getById(contactName);
+        }
     }
 
-    public List<String> getSimPhoneNumber(String contactName){
-        Cursor simContactCursor = parentActivity.getContentResolver().query(
-                Uri.parse(SIM_CONTENT_URI),
-                null,
-                null,
-                null,
-                null
-        );
-        List<String> phoneNumbers = new ArrayList<String>();
-        while(simContactCursor.moveToNext()){
-            String name = simContactCursor.getString(simContactCursor.getColumnIndex(SIM_DISPLAY_NAME));
-            String phoneNumber = simContactCursor.getString(simContactCursor.getColumnIndex(SIM_PHONE_NUMBER));
-            if (name.equals(contactName)) {
-                phoneNumbers.add(phoneNumber);
-            }
-        }
-        return phoneNumbers;
-    }
-
-    public Uri getContactPhotoUri(long contactId){
-        Uri contactUri = ContentUris.withAppendedId(Contacts.CONTENT_URI, contactId);
-        InputStream photoInputStream = Contacts.openContactPhotoInputStream(parentActivity.getContentResolver(), contactUri);
-        if (photoInputStream == null){
-            return null;
-        }
-        return Uri.withAppendedPath(contactUri, Contacts.Photo.CONTENT_DIRECTORY);
-    }
     public void onSearchContact(String query, ContactsLoaderCallback listener) {
         List<Contact> allSortedContacts = getAllSortedContacts();
         List<Contact> filteredContacts = filterContacts(allSortedContacts, query);

@@ -34,14 +34,11 @@ public class ContactDetailsViewActivity extends Activity {
         this.contactType = intent.getStringExtra("contactType");
 
         this.contactsLoader = new ContactsLoader(this);
-        showThumbnailPhoto(contactsLoader.getContactPhotoUri(contactId));
         showContactName(displayName);
-        if (ContactsLoader.CONTACT_TYPE_MOBILE.equalsIgnoreCase(contactType)){
-            showPhoneNumbers(contactsLoader.getMobilePhoneNumber(contactId));
-        }
-        else {
-            showPhoneNumbers(contactsLoader.getSimPhoneNumber(displayName));
-        }
+        Contact contact = contactsLoader.getContactFor(contactId, displayName, contactType);
+        showThumbnailPhoto(contact.photoUri);
+        showPhoneNumbers(contact.phoneNumber);
+
         super.onCreate(savedInstanceState);
     }
 

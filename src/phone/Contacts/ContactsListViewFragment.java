@@ -35,19 +35,11 @@ public class ContactsListViewFragment
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater menuInflater) {
-        menuInflater.inflate(R.menu.menu_contacts_actionbar, menu);
-        super.onCreateOptionsMenu(menu, menuInflater);
-    }
-
-    @Override
     public void onPrepareOptionsMenu(Menu menu){
         MenuItem searchIcon = menu.findItem(R.id.ic_action_search);
         SearchView searchView = (SearchView)searchIcon.getActionView();
         searchView.setOnQueryTextListener(this);
-        super.onPrepareOptionsMenu(menu);
     }
-
 
     @Override
     public boolean onQueryTextSubmit(String newText) {

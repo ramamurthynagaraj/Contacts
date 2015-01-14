@@ -54,25 +54,18 @@ public class SimContactsRepositoryImpl implements IContactsRepository<String> {
     }
 
     private Contact getContact(Cursor simContactsCursor) {
+        ArrayList<String> phoneNumbers = new ArrayList<String>();
+
         String name =simContactsCursor.getString(simContactsCursor.getColumnIndex(SIM_DISPLAY_NAME));
-        return new Contact(
-                SIM_CONTACT_IDENTIFIER,
-                name,
-                name,
-                CONTACT_TYPE_SIM,
-                getAllContactNumbers(simContactsCursor, name)
-        );
+        phoneNumbers.add(simContactsCursor.getString(simContactsCursor.getColumnIndex(SIM_PHONE_NUMBER)));
+
+        Contact contact = new Contact();
+        contact.id = SIM_CONTACT_IDENTIFIER;
+        contact.lookupKey = name;
+        contact.displayName = name;
+        contact.phoneNumber = phoneNumbers;
+        contact.contactType = CONTACT_TYPE_SIM;
+        return contact;
     }
 
-    private List<String> getAllContactNumbers(Cursor simContactsCursor, String contactName){
-        List<String> phoneNumbers = new ArrayList<String>();
-        while(simContactsCursor.moveToNext()){
-            String name = simContactsCursor.getString(simContactsCursor.getColumnIndex(SIM_DISPLAY_NAME));
-            String phoneNumber = simContactsCursor.getString(simContactsCursor.getColumnIndex(SIM_PHONE_NUMBER));
-            if (name.equals(contactName)) {
-                phoneNumbers.add(phoneNumber);
-            }
-        }
-        return phoneNumbers;
-    }
 }
