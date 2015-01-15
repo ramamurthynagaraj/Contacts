@@ -1,7 +1,6 @@
 package phone.Contacts;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
@@ -18,26 +17,25 @@ import java.util.List;
 
 public class ContactDetailsViewActivity extends Activity {
     private ContactsLoader contactsLoader;
-    private String contactType;
-    private String displayName;
-    private long contactId;
+    private Contact contact;
 
-    public ContactDetailsViewActivity() {}
+    public ContactDetailsViewActivity() {
+        contactsLoader = new ContactsLoader(this);
+    }
 
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         setContentView(R.layout.details_view);
         Intent intent = getIntent();
-        this.contactId = intent.getLongExtra("contactId", 0);
-        this.displayName = intent.getStringExtra("displayName");
-        this.contactType = intent.getStringExtra("contactType");
+        long contactId = intent.getLongExtra("contactId", 0);
+        String displayName = intent.getStringExtra("displayName");
+        String contactType = intent.getStringExtra("contactType");
 
-        this.contactsLoader = new ContactsLoader(this);
-        showContactName(displayName);
-        Contact contact = contactsLoader.getContactFor(contactId, displayName, contactType);
+        contact = contactsLoader.getContactFor(contactId, displayName, contactType);
         showThumbnailPhoto(contact.photoUri);
         showPhoneNumbers(contact.phoneNumber);
+        showContactName(contact.displayName);
 
         super.onCreate(savedInstanceState);
     }
@@ -120,7 +118,11 @@ public class ContactDetailsViewActivity extends Activity {
         ConfirmDialogFragment confirmDialogFragment = new ConfirmDialogFragment(R.string.delete_contact_question, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-
+                boolean isSuccess = contactsLoader.delete(contact);
+                if (isSuccess) {
+                    Intent intent = new Intent(getApplicationContext(), ContactsActivity.class);
+                    startActivity(intent);
+                }
             }
         }, new DialogInterface.OnClickListener() {
             @Override

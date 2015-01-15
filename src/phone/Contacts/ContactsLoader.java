@@ -1,14 +1,10 @@
 package phone.Contacts;
 
 import android.app.Activity;
-import android.content.ContentUris;
 import android.database.Cursor;
 import android.database.MatrixCursor;
-import android.net.Uri;
-import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.Contacts;
 
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -22,6 +18,7 @@ public class ContactsLoader {
     public static final String CONTACT_TYPE = "CONTACT_TYPE";
 
     public static final int ID_INDEX = 0;
+    public static final int LOOKUP_KEY_INDEX = 1;
     public static final int DISPLAY_NAME_INDEX = 2;
     public static final int CONTACT_TYPE_INDEX = 3;
 
@@ -102,4 +99,14 @@ public class ContactsLoader {
         listener.onContactsLoaded(contactsToCursor(filteredContacts));
     }
 
+    public boolean delete(Contact contact) {
+        boolean isSuccess;
+        if (ContactsLoader.CONTACT_TYPE_MOBILE.equalsIgnoreCase(contact.contactType)){
+            isSuccess = phoneContactsRepository.delete(contact);
+        }
+        else {
+            isSuccess = simContactsRepository.delete(contact);
+        }
+        return isSuccess;
+    }
 }

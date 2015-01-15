@@ -7,6 +7,6 @@ import java.util.List;
  */
 public interface IContactsRepository<T> {
     Contact getById(T id);
-    boolean deleteById(T id);
+    boolean delete(Contact contact);
     List<Contact> getAll();
 }

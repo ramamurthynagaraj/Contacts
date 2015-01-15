@@ -15,6 +15,8 @@ import java.util.List;
  */
 public class PhoneContactsRepositoryImpl implements IContactsRepository<Long> {
 
+    public static final Uri CONTENT_URI = ContactsContract.Contacts.CONTENT_URI;
+    public static final Uri CONTENT_LOOKUP_URI = ContactsContract.Contacts.CONTENT_LOOKUP_URI;
     private Activity parentActivity;
     public static final String _ID = ContactsContract.Contacts._ID;
     public static final String LOOKUP_KEY = ContactsContract.Contacts.LOOKUP_KEY;
@@ -23,6 +25,7 @@ public class PhoneContactsRepositoryImpl implements IContactsRepository<Long> {
     private static final String PHONE_NUMBER = ContactsContract.CommonDataKinds.Phone.NUMBER;
     private static final String CONTACT_ID = ContactsContract.CommonDataKinds.Phone.CONTACT_ID;
     public static final String CONTACT_TYPE_MOBILE = "Mobile";
+    public static final String WHERE_ID = _ID + "=?";
 
     public PhoneContactsRepositoryImpl(Activity activity){
 
@@ -30,26 +33,27 @@ public class PhoneContactsRepositoryImpl implements IContactsRepository<Long> {
     }
 
     @Override
-    public Contact getById(Long id) {
-        String whereCondition = _ID + "=?";
-        Cursor phoneContactsCursor = parentActivity.getContentResolver().query(ContactsContract.Contacts.CONTENT_URI, null, whereCondition, new String[]{id.toString()}, null);
+    public Contact getById(Long contactId) {
+        Cursor phoneContactsCursor = parentActivity.getContentResolver().query(CONTENT_URI, null, WHERE_ID, new String[]{ contactId.toString() }, null);
         if (phoneContactsCursor.moveToFirst()){
             Contact contact = getContact(phoneContactsCursor, getAllPhoneNumbers());
-            contact.photoUri = getContactPhotoUri(id);
+            contact.photoUri = getContactPhotoUri(contactId);
             return contact;
         }
         return null;
     }
 
     @Override
-    public boolean deleteById(Long id) {
-        return false;
+    public boolean delete(Contact contact) {
+        Uri contentLookupUri = Uri.withAppendedPath(CONTENT_LOOKUP_URI, contact.lookupKey);
+        int rowsDeleted = parentActivity.getContentResolver().delete(contentLookupUri, WHERE_ID, new String[]{String.valueOf(contact.id)});
+        return rowsDeleted >= 1;
     }
 
     @Override
     public List<Contact> getAll() {
         Cursor phoneContactsCursor = parentActivity.getContentResolver()
-                .query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
+                .query(CONTENT_URI, null, null, null, null);
         List<PhoneNumber> allPhoneNumbers = getAllPhoneNumbers();
 
         List<Contact> phoneContacts = new ArrayList<Contact>();
@@ -101,7 +105,7 @@ public class PhoneContactsRepositoryImpl implements IContactsRepository<Long> {
     }
 
     public Uri getContactPhotoUri(long contactId){
-        Uri contactUri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, contactId);
+        Uri contactUri = ContentUris.withAppendedId(CONTENT_URI, contactId);
         InputStream photoInputStream = ContactsContract.Contacts.openContactPhotoInputStream(parentActivity.getContentResolver(), contactUri);
         if (photoInputStream == null){
             return null;
