@@ -114,6 +114,14 @@ public class ContactDetailsViewActivity extends Activity {
         showConfirmDialog();
     }
 
+    public void onEditAction(MenuItem item) {
+        Intent intent = new Intent(getApplicationContext(), ContactDetailsEditActivity.class);
+        intent.putExtra("contactType", contact.contactType);
+        intent.putExtra("displayName", contact.displayName);
+        intent.putExtra("contactId", contact.id);
+        startActivity(intent);
+    }
+
     private void showConfirmDialog() {
         ConfirmDialogFragment confirmDialogFragment = new ConfirmDialogFragment(R.string.delete_contact_question, new DialogInterface.OnClickListener() {
             @Override

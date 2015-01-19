@@ -18,5 +18,8 @@
         <activity android:name=".ContactDetailsViewActivity"
                   android:label="@string/app_name">
         </activity>
+        <activity android:name=".ContactDetailsEditActivity"
+                  android:label="@string/app_name">
+        </activity>
     </application>
 </manifest>
