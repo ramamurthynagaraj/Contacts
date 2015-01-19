@@ -1,13 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<ListView xmlns:android="http://schemas.android.com/apk/res/android"
-          android:id="@android:id/list"
-          android:layout_width="match_parent"
-          android:layout_height="match_parent"
-          android:divider="@color/dark_gray"
-          android:dividerHeight="1dp"
-          android:fastScrollEnabled="true"
-          android:fastScrollAlwaysVisible="true"
-          android:clickable="true">
-</ListView>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:id="@+id/main_layout"
+              android:orientation="vertical"
+              android:background="@color/white"
+              android:layout_width="fill_parent"
+              android:layout_height="fill_parent"
+              android:paddingLeft="5dp"
+              android:paddingRight="5dp">
+    <ListView xmlns:android="http://schemas.android.com/apk/res/android"
+              android:id="@android:id/list"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:divider="@color/dark_gray"
+              android:dividerHeight="1dp"
+              android:fastScrollEnabled="true"
+              android:fastScrollAlwaysVisible="true"
+              android:clickable="true">
+
+    </ListView>
+    <TextView android:id="@android:id/empty"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:layout_gravity="center"
+              android:textColor="@color/black"
+              android:text="" />
+</LinearLayout>
+
 
