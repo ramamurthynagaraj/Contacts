@@ -34,7 +34,7 @@ public class ContactDetailsViewActivity extends Activity {
 
         contact = contactsLoader.getContactFor(contactId, displayName, contactType);
         showThumbnailPhoto(contact.photoUri);
-        showPhoneNumbers(contact.phoneNumber);
+        showPhoneNumbers(contact.phoneNumbers);
         showContactName(contact.displayName);
 
         super.onCreate(savedInstanceState);
@@ -129,6 +129,7 @@ public class ContactDetailsViewActivity extends Activity {
                 boolean isSuccess = contactsLoader.delete(contact);
                 if (isSuccess) {
                     Intent intent = new Intent(getApplicationContext(), ContactsActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
                 }
             }

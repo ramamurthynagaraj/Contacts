@@ -12,7 +12,7 @@ public class Contact {
     public String lookupKey;
     public String displayName;
     public String contactType;
-    public List<String> phoneNumber;
+    public List<String> phoneNumbers;
     public Uri photoUri;
 
     public Contact() {

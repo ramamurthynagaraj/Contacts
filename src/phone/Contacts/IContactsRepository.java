@@ -8,5 +8,7 @@ import java.util.List;
 public interface IContactsRepository<T> {
     Contact getById(T id);
     boolean delete(Contact contact);
+    boolean save(Contact contact);
     List<Contact> getAll();
+
 }

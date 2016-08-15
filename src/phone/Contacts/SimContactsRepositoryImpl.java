@@ -40,9 +40,14 @@ public class SimContactsRepositoryImpl implements IContactsRepository<String> {
 
     @Override
     public boolean delete(Contact contact) {
-        String whereCondition = String.format("tag='%s' AND number='%s'", contact.displayName, contact.phoneNumber.get(0));
+        String whereCondition = String.format("tag='%s' AND number='%s'", contact.displayName, contact.phoneNumbers.get(0));
         int rowsDeleted = parentActivity.getContentResolver().delete(SIM_CONTENT_URI, whereCondition, null);
         return rowsDeleted >= 1;
+    }
+
+    @Override
+    public boolean save(Contact contact) {
+        return false;
     }
 
     @Override
@@ -65,7 +70,7 @@ public class SimContactsRepositoryImpl implements IContactsRepository<String> {
         contact.id = SIM_CONTACT_IDENTIFIER;
         contact.lookupKey = name;
         contact.displayName = name;
-        contact.phoneNumber = phoneNumbers;
+        contact.phoneNumbers = phoneNumbers;
         contact.contactType = CONTACT_TYPE_SIM;
         return contact;
     }

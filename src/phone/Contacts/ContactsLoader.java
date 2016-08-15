@@ -109,4 +109,13 @@ public class ContactsLoader {
         }
         return isSuccess;
     }
+
+    public boolean save(Contact contact) {
+        if (ContactsLoader.CONTACT_TYPE_MOBILE.equalsIgnoreCase(contact.contactType)){
+            return phoneContactsRepository.save(contact);
+        }
+        else {
+            return simContactsRepository.save(contact);
+        }
+    }
 }

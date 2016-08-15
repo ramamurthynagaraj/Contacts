@@ -1,11 +1,7 @@
 package phone.Contacts;
 
 import android.app.Activity;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.*;
@@ -13,6 +9,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ContactDetailsEditActivity extends Activity {
@@ -34,7 +31,7 @@ public class ContactDetailsEditActivity extends Activity {
 
         contact = contactsLoader.getContactFor(contactId, displayName, contactType);
         showThumbnailPhoto(contact.photoUri);
-        showPhoneNumbers(contact.phoneNumber);
+        showPhoneNumbers(contact.phoneNumbers);
         showContactName(contact.displayName);
 
         super.onCreate(savedInstanceState);
@@ -54,6 +51,33 @@ public class ContactDetailsEditActivity extends Activity {
         }
     }
 
+    private List<String> getPhoneNumbers(){
+        ArrayList<String> phoneNumbers = new ArrayList<String>();
+        ArrayList<View> editedPhoneNumberViews = getViewsByTag((ViewGroup) this.findViewById(R.id.edit_details), "edited_phone_number");
+        for (View view : editedPhoneNumberViews){
+            phoneNumbers.add(((TextView) view).getText().toString());
+        }
+        return phoneNumbers;
+    }
+
+    private static ArrayList<View> getViewsByTag(ViewGroup root, String tag){
+        ArrayList<View> views = new ArrayList<View>();
+        final int childCount = root.getChildCount();
+        for (int i = 0; i < childCount; i++) {
+            final View child = root.getChildAt(i);
+            if (child instanceof ViewGroup) {
+                views.addAll(getViewsByTag((ViewGroup) child, tag));
+            }
+
+            final Object tagObj = child.getTag();
+            if (tagObj != null && tagObj.equals(tag)) {
+                views.add(child);
+            }
+
+        }
+        return views;
+    }
+
     private void showPhoneNumber(final String phoneNumber) {
         LayoutInflater inflater = LayoutInflater.from(this);
         View contactContentView = inflater.inflate(R.layout.edit_contact_content, null);
@@ -68,6 +92,11 @@ public class ContactDetailsEditActivity extends Activity {
         nameTextView.setText(contactName);
     }
 
+    private String getContactName() {
+        TextView nameTextView = (TextView)this.findViewById(R.id.edit_contact_name);
+        return nameTextView.getText().toString();
+    }
+
     private void showThumbnailPhoto(Uri contactPhotoUri) {
         ImageView photoView = (ImageView) this.findViewById(R.id.photo_details);
         if (contactPhotoUri != null) {
@@ -79,6 +108,10 @@ public class ContactDetailsEditActivity extends Activity {
     }
 
     public void onEditDone(MenuItem item){
-
+        List<String> phoneNumbers = getPhoneNumbers();
+        String contactName = getContactName();
+        contact.displayName = contactName;
+        contact.phoneNumbers = phoneNumbers;
+        contactsLoader.save(contact);
     }
 }

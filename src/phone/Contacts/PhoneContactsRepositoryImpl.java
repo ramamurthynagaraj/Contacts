@@ -2,6 +2,7 @@ package phone.Contacts;
 
 import android.app.Activity;
 import android.content.ContentUris;
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract;
@@ -16,6 +17,7 @@ import java.util.List;
 public class PhoneContactsRepositoryImpl implements IContactsRepository<Long> {
 
     public static final Uri CONTENT_URI = ContactsContract.Contacts.CONTENT_URI;
+    public static final Uri CONTENT_DATA_URI = ContactsContract.Data.CONTENT_URI;
     public static final Uri CONTENT_LOOKUP_URI = ContactsContract.Contacts.CONTENT_LOOKUP_URI;
     private Activity parentActivity;
     public static final String _ID = ContactsContract.Contacts._ID;
@@ -25,7 +27,9 @@ public class PhoneContactsRepositoryImpl implements IContactsRepository<Long> {
     private static final String PHONE_NUMBER = ContactsContract.CommonDataKinds.Phone.NUMBER;
     private static final String CONTACT_ID = ContactsContract.CommonDataKinds.Phone.CONTACT_ID;
     public static final String CONTACT_TYPE_MOBILE = "Mobile";
+    public static final String AND = " AND ";
     public static final String WHERE_ID = _ID + "=?";
+    public static final String WHERE_CONTACT_ID = ContactsContract.Data.CONTACT_ID + "=?";
 
     public PhoneContactsRepositoryImpl(Activity activity){
 
@@ -51,6 +55,22 @@ public class PhoneContactsRepositoryImpl implements IContactsRepository<Long> {
     }
 
     @Override
+    public boolean save(Contact contact) {
+        Long contactId = contact.id;
+        Cursor phoneContactsCursor = parentActivity.getContentResolver().query(CONTENT_URI, null, WHERE_ID, new String[]{ contactId.toString() }, null);
+        String rawContactId = "";
+        if(phoneContactsCursor.moveToFirst())
+        {
+            rawContactId = phoneContactsCursor.getString(0);
+        }
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(ContactsContract.Data.RAW_CONTACT_ID, rawContactId );
+        contentValues.put(ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME, contact.displayName );
+        parentActivity.getContentResolver().update(CONTENT_DATA_URI, contentValues, WHERE_CONTACT_ID, new String[]{contactId.toString()} );
+        return false;
+    }
+
+    @Override
     public List<Contact> getAll() {
         Cursor phoneContactsCursor = parentActivity.getContentResolver()
                 .query(CONTENT_URI, null, null, null, null);
@@ -68,14 +88,12 @@ public class PhoneContactsRepositoryImpl implements IContactsRepository<Long> {
     }
 
     private Contact getContact(Cursor phoneContacts, List<PhoneNumber> allPhoneNumbers) {
-        String name = phoneContacts.getString(phoneContacts.getColumnIndex(DISPLAY_NAME));
         long id = phoneContacts.getLong(phoneContacts.getColumnIndex(_ID));
-        String lookupKey = phoneContacts.getString(phoneContacts.getColumnIndex(LOOKUP_KEY));
         Contact contact = new Contact();
         contact.id = id;
-        contact.lookupKey = lookupKey;
-        contact.displayName = name;
-        contact.phoneNumber = getAllContactNumbers(id, allPhoneNumbers);
+        contact.lookupKey = phoneContacts.getString(phoneContacts.getColumnIndex(LOOKUP_KEY));
+        contact.displayName = phoneContacts.getString(phoneContacts.getColumnIndex(DISPLAY_NAME));
+        contact.phoneNumbers = getAllContactNumbers(id, allPhoneNumbers);
         contact.contactType = CONTACT_TYPE_MOBILE;
         return contact;
     }
